@@ -7,6 +7,7 @@ class AdminController < ApplicationController
   before_filter :validate_authorization!
 
   def patients
+    @measure_count =  HealthDataStandards::CQM::Measure.where(@filter).count
     @patient_count = Record.count
     @query_cache_count = HealthDataStandards::CQM::QueryCache.count
     @patient_cache_count = PatientCache.count
@@ -55,8 +56,15 @@ class AdminController < ApplicationController
     redirect_to action: 'patients'
   end
 
-  def upload_patients
+  def delete_all_measures
+    measures = HealthDataStandards::CQM::Measure.where(@filter)
+    measures.each { |measure|
+      measure.destroy
+    }
+    redirect_to admin_patients_path
+  end
 
+  def upload_patients
     file = params[:file]
     practice = params[:practice]
     
@@ -86,6 +94,17 @@ class AdminController < ApplicationController
     provider_tree = ProviderTreeImporter.new(File.open(temp_file))
     provider_tree.load_providers(provider_tree.sub_providers)
 
+    redirect_to action: 'patients'
+  end
+
+  def upload_measures
+    @file = params[:file]
+    @path = @file.path
+    @data = @file.read
+    temp_file = Dir.pwd + "/tmp/Measures/" + rand(1000).to_s + ".zip"
+    File.open(temp_file,"wb"){ |f| f.write(@data) }
+    %x(rake bundle:import[#{temp_file},true,false,'*',false,false])
+    File.delete(temp_file)
     redirect_to action: 'patients'
   end
 

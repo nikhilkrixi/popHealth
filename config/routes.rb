@@ -13,6 +13,7 @@ PopHealth::Application.routes.draw do
   get "admin/patients"
   put "admin/upload_patients"
   put "admin/upload_providers"
+  put "admin/upload_measures"
   delete "admin/remove_patients"
   delete "admin/remove_caches"
   delete "admin/remove_providers"
@@ -32,6 +33,14 @@ PopHealth::Application.routes.draw do
   delete "practices/remove_providers"
    
   root :to => 'home#index'
+
+  delete "/admin/delete_all_measures", to: "admin#delete_all_measures"
+
+  post "/upload_measure", to: "api#upload_measure"
+
+  post "/upload_patients", to: "api#upload_patients"
+
+  post "/upload_provider", to: "api#upload_provider"
 
   resources :practices 
   
